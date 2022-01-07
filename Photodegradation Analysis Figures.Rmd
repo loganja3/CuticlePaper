@@ -1,0 +1,261 @@
+---
+title: "Photodegradation Data Analysis: Mass Loss"
+author: "Robert Logan"
+date: "March 19, 2018"
+output: html_document
+---
+
+These data come from the 6, 12, 18, 30, and 36 month measurement times for the photodegradation experiment.
+
+Racks deployed on: : 23 Jul 2016
+t=6 removed on: 20 Jan 2017
+t=12 removed on: 16 Jul 2017
+t=18 removed on: 12 Jan 2018
+t=30 removed on: 30 Jan 2019
+t=36 removed on: 20 Jul 2019
+
+# Load and organize data
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+rm(list = ls())
+
+library(ggplot2)
+library(gridExtra)
+library(tidyverse)
+library(broom)
+library(car)
+library(lme4)
+library(MuMIn)
+library(lsmeans)
+library(cowplot)
+
+
+```
+
+# Mass loss figure (Figure 2A)
+
+```{r}
+
+# Load data
+Data_Photo <- read.csv("/Photodegradation Data LONG.csv", head=T)
+Data_Photo$Treatment <- factor(Data_Photo$Treatment, levels = c("No Shelter", "UVpass", "UVblock", "Shade"))
+Data_Photo$RackTiller <- paste(Data_Photo$Rack,Data_Photo$Stem)
+
+# Convert appropriate columns to numeric
+Data_Photo$Index <- as.numeric(Data_Photo$Index)
+Data_Photo$Rack <- as.numeric(Data_Photo$Rack)
+Data_Photo$Stem <- as.numeric(Data_Photo$Stem)
+Data_Photo$StemAbsolute <- as.numeric(Data_Photo$StemAbsolute)
+Data_Photo$Removal <- as.numeric(Data_Photo$Removal)
+Data_Photo$Time <- as.numeric(Data_Photo$Time)
+Data_Photo$Days <- as.numeric(Data_Photo$Days)
+Data_Photo$InitialDryMass.g. <- as.numeric(Data_Photo$InitialDryMass.g.)
+Data_Photo$Mass.g. <- as.numeric(Data_Photo$Mass.g.)
+
+# Check
+dim(Data_Photo)
+names(Data_Photo)
+head(Data_Photo)
+
+# Calculate mass loss and mass loss percentages. Note: these aren't actually expressed as precentages but as proportions.
+Data_Photo$MassLoss <- Data_Photo$Mass.g. - Data_Photo$InitialDryMass.g.
+Data_Photo$MassLossPercent <- Data_Photo$MassLoss / Data_Photo$InitialDryMass.g.
+Data_Photo$MassRemaining <- (1 + Data_Photo$MassLossPercent) * 100
+
+# Remove faulty data
+Data_Photo <- subset(Data_Photo, Data_Photo$Status=="good")
+dim(Data_Photo)
+Data_Photo <- subset(Data_Photo, Data_Photo$RackTiller != "10 3")
+dim(Data_Photo)
+
+# Generate figure
+fig.MassLoss <- ggplot(data = Data_Photo, aes(x = Time, y = MassRemaining, col = Treatment)) +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 1) +
+  stat_summary(fun.data = mean_se, geom = "line") +
+  theme_bw() +
+  scale_color_manual(values=c("gold", "orange", "red", "black")) +
+  theme(axis.text = element_text(size = 15),
+        axis.title = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 15),
+        axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+  coord_cartesian(xlim = c(0, 36)) +
+  xlab("Months") +
+  ylab(bquote(atop("Mass Remaining", "(Percent)")))
+fig.MassLoss
+
+
+
+```
+
+## Stand-alone mass loss figure
+
+```{r}
+
+# Add zeros for plotting
+zeros <- expand_grid(Treatment = unique(Data_Photo$Treatment),
+                     Removal = 0,
+                     Days = 0,
+                     Time = 0,
+                     MassRemaining = 100)
+
+# Generate figure
+ggplot(data = Data_Photo %>%
+         full_join(zeros),
+       aes(x = Days, y = MassRemaining, col = Treatment)) +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 1) +
+  stat_summary(fun.data = mean_se, geom = "line") +
+  theme_bw(base_size = 20) +
+  scale_color_manual(values=c("gold", "orange", "red", "black")) +
+  coord_cartesian(ylim = c(85, 100)) +
+  xlab("Days") +
+  ylab(bquote(atop("Mass Remaining", "(Percent)")))
+
+```
+
+
+# Cuticle photos (Figure 2B)
+
+```{r}
+
+# Load and cleanup data
+data.cuticle <- read.csv("/Microscope photo data.csv",header=T)
+
+data.cuticle$Treatment <- factor(data.cuticle$Treatment, levels = c("No Shelter", "UVpass", "UVblock", "Shade"))
+data.cuticle$RackTiller <- paste(data.cuticle$Rack,data.cuticle$Tiller)
+
+data.primary <- subset(data.cuticle, data.cuticle$Type=="")
+data.primary.f <- subset(data.primary, data.primary$Side=="F")
+data.primary.b <- subset(data.primary, data.primary$Side=="B")
+
+# Generate figure
+fig.FrontPics <- ggplot(data = data.primary.f, aes(x = Time, y = Score, col = Treatment)) +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 1) +
+  stat_summary(fun.data = mean_se, geom = "line") +
+  theme_bw() +
+  coord_cartesian(ylim=c(0.5,5.5), xlim = c(0, 36)) +
+  scale_color_manual(values=c("gold", "orange", "red", "black")) +
+  theme(axis.text = element_text(size = 15),
+        axis.title = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 15),
+        axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+  xlab("Months") +
+  ylab(bquote(atop("Cuticle Damage", "Score")))
+fig.FrontPics
+
+```
+
+# Moisture uptake figure (Figure 2C)
+
+```{r}
+
+# Load data
+Data_Moisture <- read.csv("/MoistureUptake.csv", header=T)
+Data_Moisture$Treatment <- factor(Data_Moisture$Treatment, levels = c("No Shelter", "UVpass", "UVblock", "Shade"))
+
+# Calculate normalized water uptake (mg water / mm^2)
+Data_Moisture$WaterPerSA <- (Data_Moisture$WaterMass / Data_Moisture$SA) * 1000
+hist(Data_Moisture$WaterPerSA, breaks = 12)
+
+# Moisture figure
+fig.Moisture <- ggplot(data = Data_Moisture, aes(x = Time, y = WaterPerSA, col = Treatment)) +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width = 1) +
+  stat_summary(fun.data = mean_se, geom = "line") +
+  theme_bw() +
+  scale_color_manual(values=c("gold", "orange", "red", "black")) +
+  theme(axis.text = element_text(size = 15),
+        axis.title = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 15)) +
+  coord_cartesian(xlim = c(0, 36), ylim = c(0, 0.16)) +
+  xlab("Months") +
+  ylab(bquote(atop("Water Uptake", "(mg/mm" ^2 * ")")))
+fig.Moisture
+
+```
+
+# Composite figure (Figure 2A-C)
+
+```{r}
+
+Grob.MassLoss <- ggplotGrob(fig.MassLoss)
+Grob.FrontPics <- ggplotGrob(fig.FrontPics)
+Grob.Moisture <- ggplotGrob(fig.Moisture)
+
+plot_grid(Grob.MassLoss, Grob.FrontPics, Grob.Moisture,
+          ncol=1,
+          align="v")
+
+# ggsave(
+#   filename = "CompositeFigure1",
+#   plot = last_plot(),
+#   device = "eps",
+#   path = "",
+#   scale = 1,
+#   width = 6,
+#   height = 6,
+#   units = "in",
+#   dpi = 300,
+#   limitsize = TRUE)
+
+```
+
+
+# Compare measurements taken across the three experiments (Figure 2D-E)
+
+```{r}
+
+Data_Moisture_simple <- Data_Moisture %>%
+  select(Rack, Tiller, Treatment, UVtreatment, Time, WaterPerSA)
+
+Data_Photo_simple <- Data_Photo %>%
+  filter(Removal == Time) %>%
+  select(Rack, Stem, Time, MassRemaining) %>%
+  rename("Tiller" = "Stem")
+
+dataMerged <- left_join(Data_Moisture_simple, Data_Photo_simple)
+
+dataMerged2 <- left_join(dataMerged,
+                         data.primary.f %>%
+                           select(Rack, Tiller, Time, Score)) %>%
+  mutate(MassLoss = 100 - MassRemaining)
+
+dataMerged2$Treatment <- factor(dataMerged2$Treatment, levels = c("No Shelter", "UVpass", "UVblock", "Shade"))
+
+# Cuticle damage vs. moisture uptake
+ggplot(dataMerged2, aes(x = Score, y = WaterPerSA, col = Treatment)) +
+  theme_bw(base_size = 20) +
+  geom_jitter(size = 3, width = 0.25) +
+  xlab("Cuticle Damage Score") +
+  # ylab(expression("Water uptake (mg H"[2]* "O mm" ^ -2* ")")) +
+  # ylab(expression("Water Uptake (mg H"[2]* "O/mm" ^ 2 * ")")) +
+  scale_color_manual(values=c("gold", "orange", "red", "black")) +
+  ylab(expression("Water Uptake (mg/mm" ^ 2 * ")")) +
+  theme(legend.position = "none")
+model1 <- wilcox.test(dataMerged2, formula = WaterPerSA ~ Score)
+anova(model1)
+
+# Moisture uptake vs. mass loss
+ggplot(dataMerged2, aes(x = WaterPerSA, y = MassLoss, col = Treatment)) +
+  theme_bw(base_size = 20) +
+  geom_point(size = 3) +
+  # xlab(expression("Water uptake (mg H"[2]* "O mm" ^ -2* ")")) +
+  # xlab(expression("Water Uptake (mg H"[2]* "O/mm" ^ 2 * ")")) +
+  scale_color_manual(values=c("gold", "orange", "red", "black")) +
+  xlab(expression("Water Uptake (mg/mm" ^ 2 * ")")) +
+  ylab("Mass Loss (%)") +
+  theme(legend.position = "none")
+# model2 <- lm(dataMerged2, formula = MassLoss ~ WaterPerSA * Treatment)
+# anova(model2)
+
+```
+
+
+

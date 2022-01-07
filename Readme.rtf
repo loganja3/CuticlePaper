@@ -1,0 +1,76 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2513
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww7640\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \
+Photodegradation Data LONG.csv\
+\
+This file contains mass loss data used for the primary solar radiation manipulation (Exp1) used to generate Figure 2A.  Each row is a unique measurement but some tillers were measured multiple times throughout the experiment.\
+\
+Index: A unique index ID for each tiller\
+Rack: Which shelter/litter rack was the tiller in (there were 24 total litter racks/shelters; see Supplementary Figure S2)\
+Stem: Tiller number within the rack (there were 10 tillers per rack/shelter; see Supplementary Figure S2)\
+StemAbsolute: How many spaces in from the edge of the rack was a tiller located? (i.e. the first\
+Treatment: UV radiation treatment (see methods for details)\
+Removal: How many months into the experiment was the tiller removed?\
+Status: An identified of whether the data are usable (a few tillers are marked as \'93bad\'94 because they broke, were eaten by an insect, etc. and were therefore unusable)\
+StartDate: Date the tiller was deployed in the field.\
+CollectionDate: Date the tiller was collected from the field.\
+Time: When this mass loss measurement was taken (rounded to the nearest month after the initial deployment).\
+Days: When this mass loss measurement was taken (in days). NB: this is the number that should be used when calculating mass loss since this column records when this measurement was made.  The reason the \'93Removal\'94 and \'93Time\'94/\'93Days\'94 columns do not match up is because later samples were measured multiple times throughout the experiment (so a tiller with a Removal of 36 means it was removed after 36 months but it was measured at every other time before then too, which is why it has multiple entries for Time and Days)\
+InitialDryMass(g): Initial dry mass in grams\
+Mass(g): Mass at measurement time in grams.  The 6 month measurments were adjusted due to a balance calibration error, which is why they appear to be represented with a different precision (this was simply due to a conversion factor; the samples were not actually measured to that many decimals!)\
+\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+\
+File: Microscope photo data.csv\
+\
+This file contains data from the visual assessment of cuticle integrity from Exp1 (used to generate Figure 2B).\
+\
+Time: Time in months that the photo was taken\
+Rack: Shelter/litter rack ID number.\
+Treatment: UV radiation treatment\
+Side: Which side of the tiller was this a photograph of? F = front (sunfacing side); B = back (shaded side)\
+TillerPhotoRank: What is the photograph number in the series for this rack.\
+Tiller: Tiller/stem ID number.\
+Score: Cuticle degradation score (ordinal score from 1-5; see methods, supplementary methods, and Figure S6 for details).\
+Type: Additional note from the cuticle removal experiment showing cuticle treatment. cr = cuticle removed; ci = cuticle intact\
+dupTreatment: Additional notes from the continuing experiment. \'93sterile\'94 means tillers were autoclaved in a pressure cooker before deployment\
+Notes: miscellaneous notes\
+\
+\'97\'97\'97\'97\'97\'97\'97\'97\'97\'97\
+\
+MoistureUptake.csv\
+\
+This file contains data from the moisture uptake assay using the fog chamber used for Exp1 (and used to generate Figure 2C).\
+\
+SequenceInNotebook: The physical location of the tillers on the tray that was used to place them in the fog chamber as recorded in my lab notebook.\
+SampleNum: A unique sample ID number for each tiller.\
+Rack: The shelter/rack where the tiller came from.\
+Tiller: Tiller location within each rack.\
+TillerID: A combined identifier showing rack and tiller (i.e. 13-3 means Rack #13 Tiller #3)\
+DryMass: Dry mass prior to placement in the fog chamber (g).\
+WetMass: Mass after fog chamber (g).\
+WetMass: Mass of water absorbed in grams (WetMass - DryMass)\
+Treatment: Radiation treatment\
+UVtreatment: A simplified radiation treatment description which lumps No Shelter and UVpass into \'93Ambient\'94 and lumps UVblock and Shade into \'93Reduced\'94 (this was meant to describe the radiation treatment based only on UV radiation received, not total treatment; we did not end up using this).\
+Time: Time in months that the tiller was deployed\
+Diameter: Diameter (mm) of the tiller (used to calculate surface area exposed to fog)\
+CutLength: Length of the tiller (mm) cut to place in the fog chamber (used to calculate surface area exposed to fog)\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+}
